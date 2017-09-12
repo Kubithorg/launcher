@@ -12,7 +12,7 @@ targetCompatibility = 1.6
 
 mainClassName = 'fr.ironcraft.kubithon.launcher.LauncherFrame'
 
-compileJava.options.encoding = 'ISO-8859-1'
+compileJava.options.encoding = 'UTF-8'
 
 // Jenkins support
 if (System.env.BUILD_NUMBER != null)

@@ -69,9 +69,9 @@ public class LauncherPanel extends JPanel
                             System.exit(1);
                         }
 
-                        JOptionPane.showMessageDialog(LauncherPanel.this, "Les mods ont bien ete installes");
+                        JOptionPane.showMessageDialog(LauncherPanel.this, "Les mods ont bien été installés");
 
-                        bar.setString("Telechargement du fichier de version");
+                        bar.setString("Téléchargement du fichier de version");
 
                         File version = new File(Downloader.MINECRAFT_FOLDER, "versions/Kubithon/Kubithon.json");
                         version.getParentFile().mkdirs();
@@ -85,7 +85,7 @@ public class LauncherPanel extends JPanel
                             reporter.catchError(e, "Impossible de télécharger le fichier de version");
                         }
 
-                        JOptionPane.showMessageDialog(LauncherPanel.this, "Le fichier de version a bien ete telecharge");
+                        JOptionPane.showMessageDialog(LauncherPanel.this, "Le fichier de version a bien été telechargé");
 
                         bar.setString("Installation du profile");
 
@@ -108,11 +108,11 @@ public class LauncherPanel extends JPanel
 
                                 IOUtils.closeQuietly(writer);
 
-                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profile a bien ete enregistre");
+                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profile a bien été enregistré");
                             }
                             else
                             {
-                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profile etait deja enregiste");
+                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profil était déjà enregisté");
                             }
                         }
                         catch (IOException e)
