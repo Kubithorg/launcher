@@ -4,7 +4,6 @@ apply plugin: 'eclipse'
 apply plugin: 'application'
 
 group = 'fr.ironcraft.kubithon'
-archivesBaseName = 'installer'
 version = appVersion
 
 sourceCompatibility = 1.6
