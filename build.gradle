@@ -9,7 +9,7 @@ version = appVersion
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-mainClassName = 'fr.ironcraft.kubithon.launcher.LauncherFrame'
+mainClassName = 'fr.ironcraft.kubithon.launcher.KubithonInstaller'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -45,4 +45,8 @@ task fatjar(type: Jar) {
     }
 
     with jar
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
 }
