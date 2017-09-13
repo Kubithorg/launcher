@@ -3,7 +3,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 
-group = 'fr.ironcraft'
+group = 'fr.ironcraft.kubithon'
 archivesBaseName = 'installer'
 version = appVersion
 
@@ -36,4 +36,14 @@ dependencies {
     compile group: 'fr.theshark34.swinger', name: 'swinger', version: '1.0.1-BETA'
 
     compile group: 'org.json', name: 'json', version: '20160810'
+}
+
+task fatjar(type: Jar) {
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    with jar
 }
