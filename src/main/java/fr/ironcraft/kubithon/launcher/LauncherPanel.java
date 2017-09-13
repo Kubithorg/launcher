@@ -46,7 +46,7 @@ public class LauncherPanel extends JPanel
         bar.setStringPainted(true);
         bar.setStringColor(Color.WHITE);
         bar.setString("Veuillez patienter...");
-        bar.setBounds(0, 85, 300, 15);
+        bar.setBounds(0, 130, 450, 20);
         this.add(bar);
 
         SwingUtilities.invokeLater(new Runnable()
@@ -137,6 +137,6 @@ public class LauncherPanel extends JPanel
     {
         super.paintComponent(graphics);
 
-        graphics.drawImage(background, 0, 0, background.getWidth(this), background.getHeight(this), this);
+        graphics.drawImage(background, 75, 25, background.getWidth(this), background.getHeight(this), this);
     }
 }

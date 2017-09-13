@@ -15,7 +15,7 @@ public class LauncherFrame extends JFrame
     {
         this.setTitle("Kubithon");
         this.setUndecorated(true);
-        this.setSize(300, 100);
+        this.setSize(450, 150);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -32,7 +32,6 @@ public class LauncherFrame extends JFrame
         if (translucent)
         {
             this.setBackground(Swinger.TRANSPARENT);
-            this.setOpacity(0.0F);
         }
         else
         {
@@ -43,16 +42,5 @@ public class LauncherFrame extends JFrame
         this.addMouseMotionListener(mover);
 
         this.setContentPane(new LauncherPanel(translucent));
-    }
-
-    public static void main(String[] args)
-    {
-        Swinger.setSystemLookNFeel();
-        Swinger.setResourcePath("/res");
-
-        Downloader.FOLDER.mkdirs();
-
-        LauncherFrame frame = new LauncherFrame();
-        frame.setVisible(true);
     }
 }
