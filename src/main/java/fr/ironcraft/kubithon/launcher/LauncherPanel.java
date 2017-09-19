@@ -98,13 +98,13 @@ public class LauncherPanel extends JPanel
 
                             if (!profiles.has("Kubithon"))
                             {
-                                JSONObject kubithon = new JSONObject("{ \"name\": \"Kubithon\", \"gameDir\": \"" + Downloader.FOLDER.getAbsolutePath().replace("\\", "\\\\") + "\", \"lastVersionId\": \"Kubithon\", \"useHopperCrashService\": false }");
+                                JSONObject kubithon = new JSONObject("{ \"name\": \"Kubithon\", \"gameDir\": \"" + Downloader.FOLDER.getAbsolutePath().replace("\\", "\\\\") + "\", \"lastVersionId\": \"Kubithon\", \"useHopperCrashService\": false, \"type\": \"custom\" }");
                                 profiles.put("Kubithon", kubithon);
 
                                 object.put("selectedProfile", "Kubithon");
 
                                 BufferedWriter writer = new BufferedWriter(new FileWriter(launcherProfiles));
-                                object.write(writer);
+                                object.write(writer, 2, 0);
 
                                 IOUtils.closeQuietly(writer);
 
