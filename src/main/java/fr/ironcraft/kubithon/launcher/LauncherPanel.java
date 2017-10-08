@@ -1,142 +1,232 @@
 package fr.ironcraft.kubithon.launcher;
 
-import fr.theshark34.openlauncherlib.util.CrashReporter;
+import fr.theshark34.openlauncherlib.util.Saver;
 import fr.theshark34.swinger.Swinger;
-import fr.theshark34.swinger.abstractcomponents.AbstractProgressBar;
 import fr.theshark34.swinger.colored.SColoredBar;
+import fr.theshark34.swinger.event.SwingerEvent;
+import fr.theshark34.swinger.event.SwingerEventListener;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.io.BufferedWriter;
+import java.awt.Rectangle;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import javax.swing.JOptionPane;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import jiconfont.icons.FontAwesome;
 
-public class LauncherPanel extends JPanel
+public class LauncherPanel extends JPanel implements SwingerEventListener
 {
-    private Image background = Swinger.getResource("logo.png");
-    private SColoredBar bar = new SColoredBar(Swinger.getTransparentWhite(75), Swinger.getTransparentWhite(125));
-    private Downloader downloader = new Downloader(this);
-    private CrashReporter reporter = new CrashReporter("Kubithon", new File(Downloader.FOLDER, "crashes"));
+    public static final Color BACKGROUND = new Color(50, 50, 50);
+    public static final Color FOREGROUND = new Color(42, 42, 42);
 
-    public LauncherPanel(boolean translucent)
+    public static final String GREEN = "#22ee22";
+    public static final String BLUE = "#0099ec";
+    public static final String YELLOW = "#eeee22";
+    public static final String RED = "#ee2222";
+
+    public static final Font FONT = new Font("Arial", Font.PLAIN, 20);
+
+    private BufferedImage logo = Swinger.getResource("logo.png");
+
+    private Saver saver = new Saver(new File(Launcher.KUBITHON_DIR, "launcher.properties"));
+
+    private boolean premium = false;
+
+    private LauncherFrame parentFrame;
+
+    private KubithonButton hideButton;
+    private KubithonButton quitButton;
+
+    // General
+    private KubithonButton launchButton;
+    private KubithonButton switchButton;
+
+    // Crack
+    private JTextField usernameField;
+    private SColoredBar progressBar;
+
+    // Premium
+    private AntialiasingLabel infosLabel;
+
+    public LauncherPanel(LauncherFrame parentFrame)
     {
         this.setLayout(null);
-        this.setBackground(Swinger.TRANSPARENT);
+        this.setBackground(BACKGROUND);
 
-        if (translucent)
-        {
-            this.setBackground(Swinger.TRANSPARENT);
-            this.setOpaque(false);
-        }
-        else
-        {
-            this.setBackground(LauncherFrame.BACKGROUND);
-        }
+        this.parentFrame = parentFrame;
 
-        bar.setStringPainted(true);
-        bar.setStringColor(Color.WHITE);
-        bar.setString("Veuillez patienter...");
-        bar.setBounds(0, 130, 450, 20);
-        this.add(bar);
+        hideButton = new KubithonButton(FontAwesome.MINUS);
+        hideButton.addEventListener(this);
+        hideButton.setBounds(LauncherFrame.WIDTH - 60, 0, 30, 30);
+        this.add(hideButton);
 
-        SwingUtilities.invokeLater(new Runnable()
+        quitButton = new KubithonButton(FontAwesome.TIMES);
+        quitButton.addEventListener(this);
+        quitButton.setBounds(LauncherFrame.WIDTH - 30, 0, 30, 30);
+        this.add(quitButton);
+
+        usernameField = new JTextField(saver.get("username", ""));
+        usernameField.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.WHITE));
+        usernameField.setHorizontalAlignment(SwingConstants.CENTER);
+        usernameField.setBackground(Swinger.TRANSPARENT);
+        usernameField.setOpaque(false);
+        usernameField.setForeground(Color.WHITE);
+        usernameField.setCaretColor(usernameField.getForeground());
+        usernameField.setCaretPosition(usernameField.getText().length());
+        usernameField.setFont(usernameField.getFont().deriveFont(16f));
+        usernameField.setBounds(125, 240, 200, 30);
+        this.add(usernameField);
+
+        progressBar = new SColoredBar(Swinger.getTransparentWhite(75), Swinger.getTransparentWhite(175));
+        progressBar.setVisible(false);
+        progressBar.setBounds(0, LauncherFrame.HEIGHT - 37, LauncherFrame.WIDTH, 2);
+        this.add(progressBar);
+
+        infosLabel = new AntialiasingLabel();
+        infosLabel.setForeground(Color.WHITE);
+        infosLabel.setFont(infosLabel.getFont().deriveFont(18f));
+        infosLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        infosLabel.setBounds(35, LauncherFrame.HEIGHT - 170, LauncherFrame.WIDTH - 70, 75);
+        this.add(infosLabel);
+
+        launchButton = new KubithonButton("Installer");
+        launchButton.addEventListener(this);
+        launchButton.setBounds(0, LauncherFrame.HEIGHT - 35, LauncherFrame.WIDTH - 35, 35);
+        this.add(launchButton);
+
+        switchButton = new KubithonButton(FontAwesome.EXCHANGE);
+        switchButton.addEventListener(this);
+        switchButton.setBounds(LauncherFrame.WIDTH - 35, LauncherFrame.HEIGHT - 35, 35, 35);
+        this.add(switchButton);
+
+        setPremium(saver.get("premium", "true").equals("true"));
+
+        usernameField.addKeyListener(new KeyAdapter()
         {
             @Override
-            public void run()
+            public void keyPressed(KeyEvent keyEvent)
             {
-                new Thread()
+                if (launchButton.isEnabled() && keyEvent.getKeyCode() == KeyEvent.VK_ENTER)
                 {
-                    @Override
-                    public void run()
-                    {
-                        try
-                        {
-                            downloader.start();
-                        }
-                        catch (IOException e)
-                        {
-                            reporter.catchError(e, "Impossible de mettre a jour les mods !");
-                            System.exit(1);
-                        }
-
-                        JOptionPane.showMessageDialog(LauncherPanel.this, "Les mods ont bien été installés");
-
-                        bar.setString("Téléchargement du fichier de version");
-
-                        File version = new File(Downloader.MINECRAFT_FOLDER, "versions/Kubithon/Kubithon.json");
-                        version.getParentFile().mkdirs();
-
-                        try
-                        {
-                            IOUtils.copy(new URL(Downloader.VERSION_FILE).openStream(), new FileOutputStream(version));
-                        }
-                        catch (IOException e)
-                        {
-                            reporter.catchError(e, "Impossible de télécharger le fichier de version");
-                        }
-
-                        JOptionPane.showMessageDialog(LauncherPanel.this, "Le fichier de version a bien été telechargé");
-
-                        bar.setString("Installation du profile");
-
-                        File launcherProfiles = new File(Downloader.MINECRAFT_FOLDER, "launcher_profiles.json");
-
-                        try
-                        {
-                            JSONObject object = new JSONObject(IOUtils.toString(new FileInputStream(launcherProfiles), Charset.defaultCharset()));
-                            JSONObject profiles = object.getJSONObject("profiles");
-
-                            if (!profiles.has("Kubithon"))
-                            {
-                                JSONObject kubithon = new JSONObject("{ \"name\": \"Kubithon\", \"gameDir\": \"" + Downloader.FOLDER.getAbsolutePath().replace("\\", "\\\\") + "\", \"lastVersionId\": \"Kubithon\", \"useHopperCrashService\": false, \"type\": \"custom\" }");
-                                profiles.put("Kubithon", kubithon);
-
-                                object.put("selectedProfile", "Kubithon");
-
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(launcherProfiles));
-                                object.write(writer, 2, 0);
-
-                                IOUtils.closeQuietly(writer);
-
-                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profile a bien été enregistré");
-                            }
-                            else
-                            {
-                                JOptionPane.showMessageDialog(LauncherPanel.this, "Le profil était déjà enregisté");
-                            }
-                        }
-                        catch (IOException e)
-                        {
-                            reporter.catchError(e, "Impossible de modifier les profils du launcher !\nVous devez avoir installé Minecraft 1.10.2 avant de lancer l'installeur !");
-                        }
-
-                        System.exit(0);
-                    }
-                }.start();
+                    onEvent(new SwingerEvent(launchButton, SwingerEvent.BUTTON_CLICKED_EVENT));
+                }
             }
         });
     }
 
-    public AbstractProgressBar getBar()
+    protected void setPremium(boolean premium)
     {
-        return bar;
+        Rectangle previous = infosLabel.getBounds();
+
+        if (this.premium = premium)
+        {
+            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 170, previous.width, previous.height);
+        }
+        else
+        {
+            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 140, previous.width, previous.height);
+        }
+
+        usernameField.setVisible(!premium);
+        usernameField.requestFocus();
+
+        launchButton.setText(premium ? "Installer" : "Lancer");
+        switchButton.setToolTipText("Passer " + (premium ? "Non-Premium" : "Premium"));
+
+        setStatus("Prêt", GREEN);
+        repaint();
+    }
+
+    protected void setStatus(String status, String statusColor)
+    {
+        String modeColor = premium ? GREEN : YELLOW;
+        String mode = premium ? "Premium" : "Non-Premium";
+
+        infosLabel.setText("<html><center>Kubithon v1.0.0<br>Mode : <font color='" + modeColor + "'>" + mode + "</font><br>Status : <font color='" + statusColor + "'>" + status + "</font></center></html>");
     }
 
     @Override
-    protected void paintComponent(Graphics graphics)
+    protected void paintComponent(Graphics g)
     {
-        super.paintComponent(graphics);
+        super.paintComponent(g);
 
-        graphics.drawImage(background, 75, 25, background.getWidth(this), background.getHeight(this), this);
+        Swinger.activateAntialias(g);
+
+        g.setColor(FOREGROUND);
+        g.fillRect(0, 0, this.getWidth(), 30);
+
+        int width = 137; // 1097 / 8
+        int height = 158; // 1267 / 8
+
+        g.drawImage(logo, this.getWidth() / 2 - width / 2, premium ? 75 : 55, width, height, this);
+    }
+
+    @Override
+    public void onEvent(SwingerEvent e)
+    {
+        if (e.getSource() == quitButton)
+        {
+            System.exit(0);
+        }
+        else if (e.getSource() == hideButton)
+        {
+            parentFrame.setState(JFrame.ICONIFIED);
+        }
+        else if (e.getSource() == switchButton)
+        {
+            this.setPremium(!this.premium);
+        }
+        else if (e.getSource() == launchButton)
+        {
+            launch();
+        }
+    }
+
+    protected void launch()
+    {
+        disable(true);
+
+        saver.set("username", usernameField.getText());
+        saver.set("premium", String.valueOf(this.premium));
+
+        final Launcher launcher = new Launcher(this);
+
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                if (premium)
+                {
+                    launcher.premium();
+                }
+                else
+                {
+                    launcher.nonPremium();
+                    progressBar.setVisible(false);
+                }
+
+                disable(false);
+            }
+        };
+        t.start();
+    }
+
+    protected void disable(boolean disable)
+    {
+        usernameField.setEnabled(!disable);
+        launchButton.setEnabled(!disable);
+        switchButton.setEnabled(!disable);
+    }
+
+    public SColoredBar getProgressBar()
+    {
+        return progressBar;
     }
 }

@@ -31,7 +31,7 @@ public class KubithonButton extends SColoredButton
 
         this.setBorder(null);
         this.setTextColor(Color.WHITE);
-        this.setFont(NewLauncherPanel.FONT);
+        this.setFont(LauncherPanel.FONT);
     }
 
     @Override

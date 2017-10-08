@@ -1,7 +1,6 @@
 package fr.ironcraft.kubithon.launcher;
 
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
-import fr.theshark34.openlauncherlib.util.explorer.FilesUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,7 +19,6 @@ public class Downloader
 {
     public static final String ENDPOINT = "http://i.kubithon.org/";
     public static final String FILES_URL = ENDPOINT + "md5sum";
-    public static final File FOLDER = GameDirGenerator.createGameDir("kubithon");
     public static final File MINECRAFT_FOLDER = GameDirGenerator.createGameDir("minecraft");
     public static final String VERSION_FILE = "http://litarvan.github.io/Kubithon/Kubithon.json";
 
@@ -34,7 +32,7 @@ public class Downloader
 
     public void start() throws IOException
     {
-        File mods = new File(FOLDER, "mods");
+        File mods = new File(Launcher.KUBITHON_DIR, "mods");
 
         loadFiles();
 
@@ -73,7 +71,7 @@ public class Downloader
 
         for (Entry<String, String> entry : files.entrySet())
         {
-            File file = new File(FOLDER, entry.getKey());
+            File file = new File(Launcher.KUBITHON_DIR, entry.getKey());
 
             if (!file.exists())
             {
@@ -97,15 +95,15 @@ public class Downloader
         int val = 0;
         int max = files.size();
 
-        panel.getBar().setMaximum(max);
+        panel.getProgressBar().setMaximum(max);
 
         for (Entry<String, String> entry : files.entrySet())
         {
             val++;
 
-            panel.getBar().setString(entry.getKey() + " " + val + "/" + max);
+            panel.setStatus("Téléchargement</font><font> " + val + "/" + max, LauncherPanel.BLUE);
 
-            File file = new File(FOLDER, entry.getKey());
+            File file = new File(Launcher.KUBITHON_DIR, entry.getKey());
             file.getParentFile().mkdirs();
             file.createNewFile();
 
@@ -114,7 +112,7 @@ public class Downloader
 
             IOUtils.copy(in, out);
 
-            panel.getBar().setValue(val);
+            panel.getProgressBar().setValue(val);
         }
     }
 }

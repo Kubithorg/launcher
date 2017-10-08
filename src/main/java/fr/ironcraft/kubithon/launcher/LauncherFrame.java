@@ -1,6 +1,5 @@
 package fr.ironcraft.kubithon.launcher;
 
-import fr.theshark34.swinger.Swinger;
 import fr.theshark34.swinger.util.WindowMover;
 import java.awt.Color;
 import javax.swing.JFrame;
@@ -44,6 +43,6 @@ public class LauncherFrame extends JFrame
         this.addMouseListener(mover);
         this.addMouseMotionListener(mover);
 
-        this.setContentPane(new NewLauncherPanel(this));
+        this.setContentPane(new LauncherPanel(this));
     }
 }

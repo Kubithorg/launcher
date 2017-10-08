@@ -14,7 +14,7 @@ public class KubithonInstaller
         IconFontSwing.register(FontAwesome.getIconFont());
         Swinger.setResourcePath("/res");
 
-        Downloader.FOLDER.mkdirs();
+        Launcher.KUBITHON_DIR.mkdirs();
 
         LauncherFrame frame = new LauncherFrame();
         frame.setVisible(true);
