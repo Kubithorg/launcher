@@ -1,5 +1,6 @@
 package fr.ironcraft.kubithon.launcher;
 
+import fr.ironcraft.kubithon.launcher.update.DownloadableFile;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import javax.swing.JOptionPane;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
@@ -26,19 +28,55 @@ public class Launcher
 
     public void nonPremium()
     {
-        panel.setStatus("Mise à jour", LauncherPanel.BLUE);
+        panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
-        panel.getProgressBar().setMaximum(100);
-        panel.getProgressBar().setValue(47);
+
+        fr.ironcraft.kubithon.launcher.update.Downloader downloader = new fr.ironcraft.kubithon.launcher.update.Downloader(panel);
 
         try
         {
-            Thread.sleep(250000L);
+            downloader.addAssets();
+            downloader.addLibs();
+            downloader.addMods();
+            downloader.addMainJar();
         }
-        catch (InterruptedException e)
+        catch (IOException e)
+        {
+            error("Impossible d'établir la liste des fichiers", e);
+            return;
+        }
+
+        String total = "";
+
+        for (DownloadableFile file : downloader.getToDownload())
+        {
+            total += file.getUrl();
+            total += repeat(140 - file.getUrl().toString().length());
+            total += file.getFile().getAbsolutePath().replace("/home/litarvan/", "");
+            total += repeat(116 - file.getFile().getAbsolutePath().replace("/home/litarvan/", "").length());
+            total += file.getSha1();
+            total += "\n";
+        }
+
+        try
+        {
+            FileUtils.write(new File("files.txt"), total, Charset.defaultCharset());
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
+    }
+
+    private String repeat(int amount)
+    {
+        String a = "";
+        for (int i = 0; i < amount; i++)
+        {
+            a += " ";
+        }
+
+        return a;
     }
 
     public void premium()
@@ -102,9 +140,9 @@ public class Launcher
 
     private void error(String error, Exception e)
     {
-        JOptionPane.showMessageDialog(panel, "Erreur : " + error, "Erreur", JOptionPane.ERROR_MESSAGE);
         panel.setStatus("Erreur", LauncherPanel.RED);
-
         e.printStackTrace();
+
+        JOptionPane.showMessageDialog(panel, "Erreur : " + error + "\nVérifiez que vous êtes bien connecté à Internet et qu'il vous reste de l'espace disque !\n(Détail : " + e + ")", "Erreur", JOptionPane.ERROR_MESSAGE);
     }
 }
