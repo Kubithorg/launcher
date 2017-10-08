@@ -35,6 +35,9 @@ dependencies {
     compile group: 'fr.theshark34.swinger', name: 'swinger', version: '1.0.1-BETA'
 
     compile group: 'org.json', name: 'json', version: '20160810'
+
+    compile group: 'com.github.jiconfont', name: 'jiconfont-swing', version: '1.0.0'
+    compile group: 'com.github.jiconfont', name: 'jiconfont-font_awesome', version: '4.7.0.0'
 }
 
 task fatjar(type: Jar) {

@@ -1,6 +1,8 @@
 package fr.ironcraft.kubithon.launcher;
 
 import fr.theshark34.swinger.Swinger;
+import jiconfont.icons.FontAwesome;
+import jiconfont.swing.IconFontSwing;
 
 public class KubithonInstaller
 {
@@ -9,6 +11,7 @@ public class KubithonInstaller
     public static void main(String[] args)
     {
         Swinger.setSystemLookNFeel();
+        IconFontSwing.register(FontAwesome.getIconFont());
         Swinger.setResourcePath("/res");
 
         Downloader.FOLDER.mkdirs();
