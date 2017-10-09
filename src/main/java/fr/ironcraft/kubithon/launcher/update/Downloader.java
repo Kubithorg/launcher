@@ -43,7 +43,8 @@ public class Downloader
     public void addAssets() throws IOException
     {
         JSONObject gameIndex = json(download(GAME_INDEX, new File(Launcher.KUBITHON_DIR, "versions/Kubithon/1.12.2.json")));
-        JSONObject assets = json(download(gameIndex.getJSONObject("assetIndex").getString("url"), new File(Launcher.KUBITHON_DIR, "assets/indexes/1.12.json")));
+        DownloadableFile assetsIndex = DownloadableFile.fromJson(gameIndex.getJSONObject("assetIndex"), file("assets/indexes/1.12.json"));
+        JSONObject assets = json(assetsIndex.query());
 
         for (Entry<String, Object> entry : assets.getJSONObject("objects").toMap().entrySet())
         {
@@ -53,16 +54,16 @@ public class Downloader
             String path = prefix + "/" + hash;
             String url = RESOURCES_REMOTE + path;
 
-            this.toDownload.add(new DownloadableFile(new URL(url), new File(Launcher.KUBITHON_DIR, "assets/" + path), hash));
+            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/" + path), (int) asset.get("size"), hash));
         }
     }
 
     public void addLibs() throws IOException
     {
-        JSONObject kubithonIndex = json(download(KUBITHON_INDEX, new File(Launcher.KUBITHON_DIR, "versions/Kubithon/Kubithon.json")));
+        JSONObject kubithonIndex = json(download(KUBITHON_INDEX, file( "versions/Kubithon/Kubithon.json")));
         addLibs(kubithonIndex);
 
-        JSONObject gameIndex = json(download(GAME_INDEX, new File(Launcher.KUBITHON_DIR, "versions/Kubithon/1.12.2.json")));
+        JSONObject gameIndex = json(download(GAME_INDEX, file("versions/Kubithon/1.12.2.json")));
         addLibs(gameIndex);
     }
 
@@ -80,6 +81,7 @@ public class Downloader
 
             String url = "http://google.fr/";
             String hash = null;
+            int size = 0;
 
             if (library.has("downloads"))
             {
@@ -91,6 +93,7 @@ public class Downloader
 
                     url = artifact.getString("url");
                     hash = artifact.getString("sha1");
+                    size = artifact.getInt("size");
                 }
             }
             else
@@ -98,7 +101,7 @@ public class Downloader
                 url = (library.has("url") ? library.getString("url") : LIBRARIES_REMOTE) + path;
             }
 
-            toDownload.add(new DownloadableFile(new URL(url), new File(Launcher.KUBITHON_DIR, "libraries/" + path), hash));
+            toDownload.add(new DownloadableFile(new URL(url), new File(Launcher.KUBITHON_DIR, "libraries/" + path), size, hash));
         }
     }
 
@@ -109,17 +112,17 @@ public class Downloader
 
         for (String mod : mods)
         {
-            String[] split = mod.split("  ");
-            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), new File(Launcher.KUBITHON_DIR, "mods/" + split[1]), split[0]));
+            String[] split = mod.split(" {2}");
+            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), new File(Launcher.KUBITHON_DIR, "mods/" + split[1]), 0, split[0]));
         }
     }
 
     public void addMainJar() throws IOException
     {
-        JSONObject gameIndex = json(download(GAME_INDEX, new File(Launcher.KUBITHON_DIR, "versions/Kubithon/1.12.2.json")));
+        JSONObject gameIndex = json(download(GAME_INDEX, file("versions/1.12.2/1.12.2.json")));
         JSONObject client = gameIndex.getJSONObject("downloads").getJSONObject("client");
 
-        toDownload.add(new DownloadableFile(new URL(client.getString("url")), new File(Launcher.KUBITHON_DIR, "versions/1.12.2/1.12.2.jar"), client.getString("sha1")));
+        toDownload.add(DownloadableFile.fromJson(client, file("versions/1.12.2/1.12.2.jar")));
     }
 
     protected String makePath(String library)
@@ -144,7 +147,12 @@ public class Downloader
         return name;
     }
 
-    protected File download(String url, File file) throws IOException
+    protected File file(String path)
+    {
+        return new File(Launcher.KUBITHON_DIR, path);
+    }
+
+    public static File download(String url, File file) throws IOException
     {
         file.getParentFile().mkdirs();
 

@@ -7,6 +7,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
+import org.json.JSONObject;
 
 public class DownloadableFile
 {
@@ -29,6 +30,7 @@ public class DownloadableFile
 
     private URL url;
     private File file;
+    private int size;
     private String sha1;
 
     public DownloadableFile(URL url, File file)
@@ -37,18 +39,54 @@ public class DownloadableFile
         this.file = file;
     }
 
-    public DownloadableFile(URL url, File file, String sha1)
+    public DownloadableFile(URL url, File file, int size, String sha1)
     {
         this.url = url;
         this.file = file;
+        this.size = size;
         this.sha1 = sha1;
     }
 
-    public boolean isValid() throws IOException
+    public File query() throws IOException
+    {
+        if (file.exists() && isValid(false))
+        {
+            System.out.println("No need to redownload " + file.getAbsolutePath());
+            return file;
+        }
+
+        for (int i = 0; i < 5 && !isValid(true); i++)
+        {
+            if (file.exists())
+            {
+                file.delete();
+            }
+
+            System.out.println("Downloading " + file.getAbsolutePath() + "(try " + i + ")");
+            Downloader.download(url.toString(), file);
+        }
+
+        System.out.println("Downloaded " + file.getAbsolutePath());
+        return file;
+    }
+
+    public boolean isValid(boolean afterUpdate) throws IOException
     {
         if (this.sha1 == null || sha1Digest == null)
         {
             return true;
+        }
+
+        if (!file.exists())
+        {
+            return false;
+        }
+
+        boolean sizeChecked = file.length() == size;
+
+        if (sizeChecked || !afterUpdate)
+        {
+            return sizeChecked;
         }
 
         FileInputStream in = new FileInputStream(file);
@@ -75,8 +113,18 @@ public class DownloadableFile
         return file;
     }
 
+    public int getSize()
+    {
+        return size;
+    }
+
     public String getSha1()
     {
         return sha1;
+    }
+
+    public static DownloadableFile fromJson(JSONObject obj, File file) throws IOException
+    {
+        return new DownloadableFile(new URL(obj.getString("url")), file, obj.getInt("size"), obj.has("sha1") ? obj.getString("sha1") : obj.getString("hash"));
     }
 }
