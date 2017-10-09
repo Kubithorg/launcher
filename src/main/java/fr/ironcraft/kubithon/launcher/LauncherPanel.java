@@ -31,8 +31,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
     public static final String RED = "#ee2222";
 
     public static final Font FONT = new Font("Arial", Font.PLAIN, 20);
-
-    private BufferedImage logo = Swinger.getResource("logo.png");
+    public static final BufferedImage LOGO = Swinger.getResource("logo.png");
 
     private Saver saver = new Saver(new File(Launcher.KUBITHON_DIR, "launcher.properties"));
 
@@ -164,7 +163,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         int width = 137; // 1097 / 8
         int height = 158; // 1267 / 8
 
-        g.drawImage(logo, this.getWidth() / 2 - width / 2, premium ? 75 : 55, width, height, this);
+        g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 55, width, height, this);
     }
 
     @Override

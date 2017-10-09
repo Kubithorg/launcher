@@ -16,6 +16,7 @@ public class LauncherFrame extends JFrame
     public LauncherFrame()
     {
         this.setTitle("Kubithon");
+        this.setIconImage(LauncherPanel.LOGO);
         this.setUndecorated(true);
         this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);

@@ -289,6 +289,7 @@ public class Downloader
         OutputStream out = new FileOutputStream(file);
 
         IOUtils.copy(in, out);
+        IOUtils.closeQuietly(in, out);
 
         return file;
     }

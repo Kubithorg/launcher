@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 
@@ -51,6 +52,11 @@ public class DownloadableFile
     {
         if (file.exists() && isValid(false))
         {
+            if (!file.getAbsolutePath().endsWith(".json"))
+            {
+                System.out.println("No need to download " + file.getAbsolutePath());
+            }
+
             return file;
         }
 
@@ -61,45 +67,63 @@ public class DownloadableFile
                 file.delete();
             }
 
-            System.out.println("Downloading " + file.getAbsolutePath() + "(try " + i + ")");
+            System.out.println("Downloading " + file.getAbsolutePath() + " (try " + i + ")");
             Downloader.download(url.toString(), file);
         }
 
-        System.out.println("Downloaded " + file.getAbsolutePath());
+        System.out.println("Finished downloading " + file.getAbsolutePath());
         return file;
     }
 
     public boolean isValid(boolean afterUpdate) throws IOException
     {
-        if (this.sha1 == null || sha1Digest == null)
-        {
-            return true;
-        }
-
         if (!file.exists())
         {
             return false;
         }
 
-        boolean sizeChecked = file.length() == size;
-
-        if (sizeChecked || !afterUpdate)
+        if (sha1Digest == null)
         {
-            return sizeChecked;
+            return true;
         }
 
-        FileInputStream in = new FileInputStream(file);
+        if (size != 0)
+        {
+            boolean sizeChecked = file.length() == size;
 
-        byte[] bytes = new byte[2048];
-        int n;
-
-        while ((n = in.read(bytes)) != -1) {
-            sha1Digest.update(bytes, 0, n);
+            if (sizeChecked || !afterUpdate)
+            {
+                return sizeChecked;
+            }
         }
 
-        byte[] digest = sha1Digest.digest();
+        if (this.sha1 != null && this.sha1.length() > 37)
+        {
+            MessageDigest sha1digest;
 
-        return new String(Hex.encodeHex(digest)).equals(sha1);
+            try
+            {
+                sha1digest = MessageDigest.getInstance("SHA-1");
+            }
+            catch (NoSuchAlgorithmException ignored)
+            {
+                return true;
+            }
+
+            FileInputStream in = new FileInputStream(file);
+
+            byte[] buffer = new byte[8192];
+            int len = in.read(buffer);
+
+            while (len != -1) {
+                sha1digest.update(buffer, 0, len);
+                len = in.read(buffer);
+            }
+
+            return new HexBinaryAdapter().marshal(sha1digest.digest()).equalsIgnoreCase(sha1);
+        }
+
+        return true;
     }
 
     public URL getUrl()

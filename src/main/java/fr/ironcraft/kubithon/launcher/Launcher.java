@@ -10,6 +10,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,7 +50,7 @@ public class Launcher
             return;
         }
 
-        String total = "";
+        /*String total = "";
 
         for (DownloadableFile file : downloader.getToDownload())
         {
@@ -81,7 +85,47 @@ public class Launcher
         catch (IOException e)
         {
             e.printStackTrace();
+        }*/
+
+        panel.setStatus("Téléchargement", LauncherPanel.BLUE);
+
+        final ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
+
+        panel.getProgressBar().setMaximum(downloader.getToDownload().size());
+
+        List<DownloadableFile> toDownload = downloader.getToDownload();
+        for (final DownloadableFile file : toDownload)
+        {
+            pool.submit(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        file.query();
+                        panel.getProgressBar().setValue(panel.getProgressBar().getValue() + 1);
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
+
+        pool.shutdown();
+
+        try
+        {
+            pool.awaitTermination(1000L, TimeUnit.DAYS);
+        }
+        catch (InterruptedException ignored)
+        {
+        }
+
+        System.out.println("--> Downloaded " + downloader.getToDownload().size() + " files");
+        panel.setStatus("Lancement...", LauncherPanel.BLUE);
     }
 
     private String repeat(int amount)
