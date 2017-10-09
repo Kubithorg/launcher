@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -196,6 +199,45 @@ public class Downloader
         toDownload.add(DownloadableFile.fromJson(client, file("versions/1.12.2/1.12.2.jar")));
 
         System.out.println("OK");
+    }
+
+    public void download()
+    {
+        final ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
+
+        panel.getProgressBar().setMaximum(toDownload.size());
+
+        for (final DownloadableFile file : toDownload)
+        {
+            pool.submit(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        file.query();
+                        panel.getProgressBar().setValue(panel.getProgressBar().getValue() + 1);
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        pool.shutdown();
+
+        try
+        {
+            pool.awaitTermination(1000L, TimeUnit.DAYS);
+        }
+        catch (InterruptedException ignored)
+        {
+        }
+
+        System.out.println("--> Downloaded " + toDownload.size() + " files");
     }
 
     protected String makePath(String library)
