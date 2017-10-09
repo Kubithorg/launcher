@@ -51,7 +51,6 @@ public class DownloadableFile
     {
         if (file.exists() && isValid(false))
         {
-            System.out.println("No need to redownload " + file.getAbsolutePath());
             return file;
         }
 

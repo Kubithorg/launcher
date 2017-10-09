@@ -51,9 +51,23 @@ public class Launcher
         for (DownloadableFile file : downloader.getToDownload())
         {
             total += file.getUrl();
-            total += repeat(140 - file.getUrl().toString().length());
+            total += repeat(146 - file.getUrl().toString().length());
             total += file.getFile().getAbsolutePath().replace("/home/litarvan/", "");
-            total += repeat(116 - file.getFile().getAbsolutePath().replace("/home/litarvan/", "").length());
+            total += repeat(128 - file.getFile().getAbsolutePath().replace("/home/litarvan/", "").length());
+            total += file.getSha1();
+            total += repeat(42 - (file.getSha1() == null ? 4 : file.getSha1().length()));
+            total += file.getSize();
+            total += "\n";
+        }
+
+        total += "\n";
+
+        for (DownloadableFile file : downloader.getNatives())
+        {
+            total += file.getUrl();
+            total += repeat(146 - file.getUrl().toString().length());
+            total += file.getFile().getAbsolutePath().replace("/home/litarvan/", "");
+            total += repeat(128 - file.getFile().getAbsolutePath().replace("/home/litarvan/", "").length());
             total += file.getSha1();
             total += repeat(42 - (file.getSha1() == null ? 4 : file.getSha1().length()));
             total += file.getSize();

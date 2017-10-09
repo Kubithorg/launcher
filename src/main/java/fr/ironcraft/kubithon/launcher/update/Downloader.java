@@ -4,6 +4,7 @@ import fr.ironcraft.kubithon.launcher.Launcher;
 import fr.ironcraft.kubithon.launcher.LauncherPanel;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +30,13 @@ public class Downloader
     public static final String GAME_INDEX = INDEX_REMOTE + "/1.12.json";
     public static final String MODS_INDEX = KUBITHON_REMOTE + "md5sum";
 
+    public static final String MAVEN_REPOSITORY = "https://repo.maven.apache.org/maven2/";
+    public static final String FORGE_REPOSITORY = "http://files.minecraftforge.net/maven/";
+    public static final String SPONGE_REPOSITORY = "https://repo.spongepowered.org/maven/";
+
     private LauncherPanel panel;
     private List<DownloadableFile> toDownload;
+    private List<DownloadableFile> natives;
 
     // TODO: RULES, CLASSIFIERS
 
@@ -38,13 +44,18 @@ public class Downloader
     {
         this.panel = panel;
         this.toDownload = new ArrayList<DownloadableFile>();
+        this.natives = new ArrayList<DownloadableFile>();
     }
 
     public void addAssets() throws IOException
     {
+        System.out.print("Listing assets -> Getting indexes... ");
+
         JSONObject gameIndex = json(download(GAME_INDEX, new File(Launcher.KUBITHON_DIR, "versions/Kubithon/1.12.2.json")));
         DownloadableFile assetsIndex = DownloadableFile.fromJson(gameIndex.getJSONObject("assetIndex"), file("assets/indexes/1.12.json"));
         JSONObject assets = json(assetsIndex.query());
+
+        System.out.print("Listing... ");
 
         for (Entry<String, Object> entry : assets.getJSONObject("objects").toMap().entrySet())
         {
@@ -54,22 +65,31 @@ public class Downloader
             String path = prefix + "/" + hash;
             String url = RESOURCES_REMOTE + path;
 
-            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/" + path), (int) asset.get("size"), hash));
+            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/" + path), (Integer) asset.get("size"), hash));
         }
+
+        System.out.println("OK");
     }
 
     public void addLibs() throws IOException
     {
+        System.out.print("Listing assets -> Getting indexes... ");
         JSONObject kubithonIndex = json(download(KUBITHON_INDEX, file( "versions/Kubithon/Kubithon.json")));
+        JSONObject gameIndex = json(download(GAME_INDEX, file("versions/Kubithon/1.12.2.json")));
+
+        System.out.print("Listing Kubithon libraries... ");
         addLibs(kubithonIndex);
 
-        JSONObject gameIndex = json(download(GAME_INDEX, file("versions/Kubithon/1.12.2.json")));
+        System.out.print("Listing Minecraft libraries... ");
         addLibs(gameIndex);
+
+        System.out.println("OK");
     }
 
     protected void addLibs(JSONObject index) throws IOException
     {
         JSONArray libraries = index.getJSONArray("libraries");
+        String nativesKey = "natives-" + os();
 
         for (int i = 0; i < libraries.length(); i++)
         {
@@ -79,9 +99,14 @@ public class Downloader
 
             String path = makePath(name);
 
-            String url = "http://google.fr/";
+            String url = null;
             String hash = null;
             int size = 0;
+
+            if (!checkRules(library))
+            {
+                continue;
+            }
 
             if (library.has("downloads"))
             {
@@ -95,34 +120,82 @@ public class Downloader
                     hash = artifact.getString("sha1");
                     size = artifact.getInt("size");
                 }
+
+                if (downloads.has("classifiers"))
+                {
+                    JSONObject classifiers = downloads.getJSONObject("classifiers");
+
+                    if (classifiers.has(nativesKey))
+                    {
+                        natives.add(DownloadableFile.fromJson(classifiers.getJSONObject(nativesKey), file("libraries/" + path.substring(0, path.length() - 4) + "-" + nativesKey + ".jar")));
+                    }
+                }
             }
             else
             {
                 url = (library.has("url") ? library.getString("url") : LIBRARIES_REMOTE) + path;
             }
 
-            toDownload.add(new DownloadableFile(new URL(url), new File(Launcher.KUBITHON_DIR, "libraries/" + path), size, hash));
+            if (url != null)
+            {
+                if (hash == null)
+                {
+                    if (name.startsWith("net.minecraftforge:forge:"))
+                    {
+                        url = url.substring(0, url.length() - 4) + "-universal.jar";
+                    }
+                    else if (!name.startsWith("net.minecraftforge"))
+                    {
+                        url = url.replace(FORGE_REPOSITORY, SPONGE_REPOSITORY); // huhuhu
+                    }
+
+                    InputStream stream;
+
+                    try
+                    {
+                        stream = new URL(url + ".sha1").openStream();
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        stream = new URL((url = url.replace(SPONGE_REPOSITORY, MAVEN_REPOSITORY)) + ".sha1").openStream();
+                    }
+
+                    hash = IOUtils.toString(stream, Charset.defaultCharset());
+                }
+
+                toDownload.add(new DownloadableFile(new URL(url), file("libraries/" + path), size, hash));
+            }
         }
     }
 
     public void addMods() throws IOException
     {
+        System.out.print("Listing mods... Getting index... ");
+
         String index = IOUtils.toString(new URL(MODS_INDEX).openStream(), Charset.defaultCharset());
         String[] mods = index.split("\n");
+
+        System.out.print("Listing... ");
 
         for (String mod : mods)
         {
             String[] split = mod.split(" {2}");
             toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), new File(Launcher.KUBITHON_DIR, "mods/" + split[1]), 0, split[0]));
         }
+
+        System.out.println("OK");
     }
 
     public void addMainJar() throws IOException
     {
+        System.out.print("Getting main jar... ");
+
         JSONObject gameIndex = json(download(GAME_INDEX, file("versions/1.12.2/1.12.2.json")));
         JSONObject client = gameIndex.getJSONObject("downloads").getJSONObject("client");
 
         toDownload.add(DownloadableFile.fromJson(client, file("versions/1.12.2/1.12.2.jar")));
+
+        System.out.println("OK");
     }
 
     protected String makePath(String library)
@@ -145,6 +218,62 @@ public class Downloader
         name += split[split.length - 2] + "-" + split[split.length - 1] + ".jar";
 
         return name;
+    }
+
+    protected boolean checkRules(JSONObject library)
+    {
+        if (!library.has("rules"))
+        {
+            return true;
+        }
+
+        boolean allow = true;
+
+        JSONArray rules = library.getJSONArray("rules");
+
+        for (int i = 0; i < rules.length(); i++)
+        {
+            JSONObject rule = rules.getJSONObject(i);
+
+            String action = rule.getString("action");
+
+            if (!rule.has("os"))
+            {
+                allow = action.equals("allow");
+                continue;
+            }
+
+            String os = rule.getJSONObject("os").getString("name");
+
+            if (action.equals("allow"))
+            {
+                allow = os.equals(os());
+            }
+            else if (action.equals("disallow"))
+            {
+                allow = !os.equals(os());
+            }
+        }
+
+        return allow;
+    }
+
+    protected String os()
+    {
+        String os = System.getProperty("os.name");
+
+        if (os.contains("win"))
+        {
+            return "windows";
+        }
+        else if (os.contains("mac"))
+        {
+            return "osx";
+        }
+        else
+        {
+            return "linux";
+        }
     }
 
     protected File file(String path)
@@ -173,5 +302,10 @@ public class Downloader
     public List<DownloadableFile> getToDownload()
     {
         return toDownload;
+    }
+
+    public List<DownloadableFile> getNatives()
+    {
+        return natives;
     }
 }
