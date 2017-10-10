@@ -4,6 +4,7 @@ import fr.ironcraft.kubithon.launcher.update.Downloader;
 import fr.ironcraft.kubithon.launcher.update.NativesManager;
 import fr.theshark34.openlauncherlib.LaunchException;
 import fr.theshark34.openlauncherlib.external.ExternalLauncher;
+import fr.theshark34.openlauncherlib.internal.InternalLaunchProfile;
 import fr.theshark34.openlauncherlib.internal.InternalLauncher;
 import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
 import fr.theshark34.openlauncherlib.minecraft.GameFolder;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.UUID;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.IOUtils;
@@ -60,6 +62,9 @@ public class Launcher
             return;
         }
 
+        panel.setStatus("Téléchargement", LauncherPanel.BLUE);
+        downloader.download();
+
         panel.setStatus("Extraction des natives", LauncherPanel.BLUE);
 
         NativesManager natives = new NativesManager(downloader.getNatives());
@@ -72,9 +77,6 @@ public class Launcher
             error("Impossible d'extraire les natives !\nVérifiez qu'il vous reste de l'espace disque, veuillez réessayer", e);
         }
 
-        panel.setStatus("Téléchargement", LauncherPanel.BLUE);
-        downloader.download();
-
         panel.setStatus("Lancement...", LauncherPanel.BLUE);
 
         GameInfos infos = new GameInfos("Kubithon", new GameVersion("1.12.2", GameType.V1_8_HIGHER), new GameTweak[]{GameTweak.FORGE});
@@ -83,7 +85,10 @@ public class Launcher
 
         try
         {
-            InternalLauncher launcher = new InternalLauncher(MinecraftLauncher.createInternalProfile(infos, folder, auth));
+            InternalLaunchProfile profile = MinecraftLauncher.createInternalProfile(infos, folder, auth);
+            System.out.println(Arrays.toString((String[]) profile.getParameters()[0]));
+            InternalLauncher launcher = new InternalLauncher(profile);
+
             new Thread()
             {
                 @Override

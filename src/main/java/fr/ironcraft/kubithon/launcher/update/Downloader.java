@@ -68,7 +68,7 @@ public class Downloader
             String path = prefix + "/" + hash;
             String url = RESOURCES_REMOTE + path;
 
-            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/" + path), (Integer) asset.get("size"), hash));
+            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/objects/" + path), (Integer) asset.get("size"), hash));
         }
 
         System.out.println("OK");
@@ -130,7 +130,10 @@ public class Downloader
 
                     if (classifiers.has(nativesKey))
                     {
-                        natives.add(DownloadableFile.fromJson(classifiers.getJSONObject(nativesKey), file("libraries/" + path.substring(0, path.length() - 4) + "-" + nativesKey + ".jar")));
+                        DownloadableFile nat = DownloadableFile.fromJson(classifiers.getJSONObject(nativesKey), file("libraries/" + path.substring(0, path.length() - 4) + "-" + nativesKey + ".jar"));
+
+                        toDownload.add(nat);
+                        natives.add(nat);
                     }
                 }
             }
@@ -302,7 +305,7 @@ public class Downloader
 
     protected String os()
     {
-        String os = System.getProperty("os.name");
+        String os = System.getProperty("os.name").toLowerCase();
 
         if (os.contains("win"))
         {
