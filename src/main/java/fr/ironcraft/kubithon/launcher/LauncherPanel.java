@@ -207,7 +207,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
                 }
                 else
                 {
-                    launcher.nonPremium();
+                    launcher.nonPremium(usernameField.getText(), parentFrame);
                     progressBar.setVisible(false);
                 }
 

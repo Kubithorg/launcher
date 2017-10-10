@@ -1,6 +1,17 @@
 package fr.ironcraft.kubithon.launcher;
 
 import fr.ironcraft.kubithon.launcher.update.Downloader;
+import fr.ironcraft.kubithon.launcher.update.NativesManager;
+import fr.theshark34.openlauncherlib.LaunchException;
+import fr.theshark34.openlauncherlib.external.ExternalLauncher;
+import fr.theshark34.openlauncherlib.internal.InternalLauncher;
+import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
+import fr.theshark34.openlauncherlib.minecraft.GameFolder;
+import fr.theshark34.openlauncherlib.minecraft.GameInfos;
+import fr.theshark34.openlauncherlib.minecraft.GameTweak;
+import fr.theshark34.openlauncherlib.minecraft.GameType;
+import fr.theshark34.openlauncherlib.minecraft.GameVersion;
+import fr.theshark34.openlauncherlib.minecraft.MinecraftLauncher;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,8 +19,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.UUID;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -26,7 +40,7 @@ public class Launcher
         this.panel = panel;
     }
 
-    public void nonPremium()
+    public void nonPremium(String username, LauncherFrame frame)
     {
         panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
@@ -36,7 +50,7 @@ public class Launcher
         try
         {
             downloader.addAssets();
-            downloader.addLibs();
+            downloader.addLibs(KUBITHON_DIR);
             downloader.addMods();
             downloader.addMainJar();
         }
@@ -46,10 +60,54 @@ public class Launcher
             return;
         }
 
+        panel.setStatus("Extraction des natives", LauncherPanel.BLUE);
+
+        NativesManager natives = new NativesManager(downloader.getNatives());
+        try
+        {
+            natives.extract();
+        }
+        catch (IOException e)
+        {
+            error("Impossible d'extraire les natives !\nVérifiez qu'il vous reste de l'espace disque, veuillez réessayer", e);
+        }
+
         panel.setStatus("Téléchargement", LauncherPanel.BLUE);
         downloader.download();
 
         panel.setStatus("Lancement...", LauncherPanel.BLUE);
+
+        GameInfos infos = new GameInfos("Kubithon", new GameVersion("1.12.2", GameType.V1_8_HIGHER), new GameTweak[]{GameTweak.FORGE});
+        GameFolder folder = new GameFolder("assets", "libraries", "natives", "versions/1.12.2/1.12.2.jar");
+        AuthInfos auth = new AuthInfos(username, "unauthorized", UUID.randomUUID().toString());
+
+        try
+        {
+            InternalLauncher launcher = new InternalLauncher(MinecraftLauncher.createInternalProfile(infos, folder, auth));
+            new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Thread.sleep(5000L);
+                    }
+                    catch (InterruptedException ignored)
+                    {
+                    }
+
+                    frame.setVisible(false);
+                }
+            }.start();
+
+            launcher.launch();
+            System.exit(0);
+        }
+        catch (LaunchException e)
+        {
+            error("Impossible de lancer le jeu !\nVeuillez réessayer", e);
+        }
     }
 
     public void premium()
@@ -62,7 +120,11 @@ public class Launcher
 
         try
         {
-            IOUtils.copy(new URL(Downloader.KUBITHON_INDEX).openStream(), new FileOutputStream(version));
+            InputStream in = new URL(Downloader.KUBITHON_INDEX).openStream();
+            OutputStream out = new FileOutputStream(version);
+
+            IOUtils.copy(in, out);
+            IOUtils.closeQuietly(in, out);
         }
         catch (IOException e)
         {
@@ -73,6 +135,7 @@ public class Launcher
         Downloader downloader = new Downloader(panel);
         try
         {
+            downloader.addLibs(MINECRAFT_DIR);
             downloader.addMods();
         }
         catch (IOException e)
@@ -90,7 +153,10 @@ public class Launcher
 
         try
         {
-            JSONObject object = new JSONObject(IOUtils.toString(new FileInputStream(launcherProfiles), Charset.defaultCharset()));
+            InputStream in = new FileInputStream(launcherProfiles);
+            JSONObject object = new JSONObject(IOUtils.toString(in, Charset.defaultCharset()));
+            IOUtils.closeQuietly(in);
+
             JSONObject profiles = object.getJSONObject("profiles");
 
             if (!profiles.has("Kubithon"))
