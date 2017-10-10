@@ -41,8 +41,6 @@ public class Downloader
     private List<DownloadableFile> toDownload;
     private List<DownloadableFile> natives;
 
-    // TODO: RULES, CLASSIFIERS
-
     public Downloader(LauncherPanel panel)
     {
         this.panel = panel;
