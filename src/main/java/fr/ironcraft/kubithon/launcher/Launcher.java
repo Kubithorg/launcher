@@ -42,7 +42,7 @@ public class Launcher
         this.panel = panel;
     }
 
-    public void nonPremium(String username, LauncherFrame frame)
+    public void nonPremium(String username,final LauncherFrame frame)
     {
         panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
@@ -79,7 +79,7 @@ public class Launcher
 
         panel.setStatus("Lancement...", LauncherPanel.BLUE);
 
-        GameInfos infos = new GameInfos("Kubithon", new GameVersion("1.12.2", GameType.V1_8_HIGHER), new GameTweak[]{GameTweak.FORGE});
+        GameInfos infos = new GameInfos("kubithon", new GameVersion("1.12.2", GameType.V1_8_HIGHER), new GameTweak[]{GameTweak.FORGE});
         GameFolder folder = new GameFolder("assets", "libraries", "natives", "versions/1.12.2/1.12.2.jar");
         AuthInfos auth = new AuthInfos(username, "unauthorized", UUID.randomUUID().toString());
 
