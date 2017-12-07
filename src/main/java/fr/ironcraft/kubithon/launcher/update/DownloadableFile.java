@@ -7,7 +7,6 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 
 public class DownloadableFile

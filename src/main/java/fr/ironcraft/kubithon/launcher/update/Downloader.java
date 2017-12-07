@@ -31,7 +31,7 @@ public class Downloader
 
     public static final String KUBITHON_INDEX = INDEX_REMOTE + "/Kubithon.json";
     public static final String GAME_INDEX = INDEX_REMOTE + "/1.12.json";
-    public static final String MODS_INDEX = KUBITHON_REMOTE + "md5sum";
+    public static final String MODS_INDEX = KUBITHON_REMOTE + "sha1sum";
 
     public static final String MAVEN_REPOSITORY = "https://repo.maven.apache.org/maven2/";
     public static final String FORGE_REPOSITORY = "http://files.minecraftforge.net/maven/";

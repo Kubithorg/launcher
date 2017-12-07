@@ -28,6 +28,9 @@ public class Launcher
 
     public void nonPremium()
     {
+        panel.setStatus("Authentification...", LauncherPanel.BLUE);
+        // TODO
+
         panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
 

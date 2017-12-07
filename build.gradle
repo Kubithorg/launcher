@@ -32,6 +32,7 @@ dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
 
     compile group: 'fr.litarvan', name: 'openlauncherlib', version: '3.0.3-BETA'
+    compile group: 'fr.litarvan', name: 'openauth', version: '1.0.4'
     compile group: 'fr.theshark34.swinger', name: 'swinger', version: '1.0.1-BETA'
 
     compile group: 'org.json', name: 'json', version: '20160810'
