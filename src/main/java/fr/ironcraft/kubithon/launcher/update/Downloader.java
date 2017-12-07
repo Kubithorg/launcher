@@ -41,8 +41,6 @@ public class Downloader
     private List<DownloadableFile> toDownload;
     private List<DownloadableFile> natives;
 
-    // TODO: RULES, CLASSIFIERS
-
     public Downloader(LauncherPanel panel)
     {
         this.panel = panel;
@@ -68,28 +66,28 @@ public class Downloader
             String path = prefix + "/" + hash;
             String url = RESOURCES_REMOTE + path;
 
-            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/" + path), (Integer) asset.get("size"), hash));
+            this.toDownload.add(new DownloadableFile(new URL(url), file("assets/objects/" + path), (Integer) asset.get("size"), hash));
         }
 
         System.out.println("OK");
     }
 
-    public void addLibs() throws IOException
+    public void addLibs(File out) throws IOException
     {
         System.out.print("Listing assets -> Getting indexes... ");
         JSONObject kubithonIndex = json(download(KUBITHON_INDEX, file( "versions/Kubithon/Kubithon.json")));
         JSONObject gameIndex = json(download(GAME_INDEX, file("versions/Kubithon/1.12.2.json")));
 
         System.out.print("Listing Kubithon libraries... ");
-        addLibs(kubithonIndex);
+        addLibs(kubithonIndex, out);
 
         System.out.print("Listing Minecraft libraries... ");
-        addLibs(gameIndex);
+        addLibs(gameIndex, out);
 
         System.out.println("OK");
     }
 
-    protected void addLibs(JSONObject index) throws IOException
+    protected void addLibs(JSONObject index, File out) throws IOException
     {
         JSONArray libraries = index.getJSONArray("libraries");
         String nativesKey = "natives-" + os();
@@ -130,7 +128,10 @@ public class Downloader
 
                     if (classifiers.has(nativesKey))
                     {
-                        natives.add(DownloadableFile.fromJson(classifiers.getJSONObject(nativesKey), file("libraries/" + path.substring(0, path.length() - 4) + "-" + nativesKey + ".jar")));
+                        DownloadableFile nat = DownloadableFile.fromJson(classifiers.getJSONObject(nativesKey), file("libraries/" + path.substring(0, path.length() - 4) + "-" + nativesKey + ".jar"));
+
+                        toDownload.add(nat);
+                        natives.add(nat);
                     }
                 }
             }
@@ -166,7 +167,7 @@ public class Downloader
                     hash = IOUtils.toString(stream, Charset.defaultCharset());
                 }
 
-                toDownload.add(new DownloadableFile(new URL(url), file("libraries/" + path), size, hash));
+                toDownload.add(new DownloadableFile(new URL(url), new File(out, "libraries/" + path), size, hash));
             }
         }
     }
@@ -183,7 +184,7 @@ public class Downloader
         for (String mod : mods)
         {
             String[] split = mod.split(" {2}");
-            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), new File(Launcher.KUBITHON_DIR, "mods/" + split[1]), 0, split[0]));
+            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), file(split[1]), 0, split[0]));
         }
 
         System.out.println("OK");
@@ -302,7 +303,7 @@ public class Downloader
 
     protected String os()
     {
-        String os = System.getProperty("os.name");
+        String os = System.getProperty("os.name").toLowerCase();
 
         if (os.contains("win"))
         {

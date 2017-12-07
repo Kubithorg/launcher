@@ -147,7 +147,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         String modeColor = premium ? GREEN : YELLOW;
         String mode = premium ? "Premium" : "Non-Premium";
 
-        infosLabel.setText("<html><center>Kubithon v1.0.0<br>Mode : <font color='" + modeColor + "'>" + mode + "</font><br>Status : <font color='" + statusColor + "'>" + status + "</font></center></html>");
+        infosLabel.setText("<html><center>Kubithon " + KubithonInstaller.VERSION + "<br>Mode : <font color='" + modeColor + "'>" + mode + "</font><br>Status : <font color='" + statusColor + "'>" + status + "</font></center></html>");
     }
 
     @Override
@@ -207,7 +207,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
                 }
                 else
                 {
-                    launcher.nonPremium();
+                    launcher.nonPremium(usernameField.getText(), parentFrame);
                     progressBar.setVisible(false);
                 }
 
