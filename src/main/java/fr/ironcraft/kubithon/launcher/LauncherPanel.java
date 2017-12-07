@@ -32,10 +32,15 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
 
     public static final Font FONT = new Font("Arial", Font.PLAIN, 20);
     public static final BufferedImage LOGO = Swinger.getResource("logo.png");
+    public static final BufferedImage FLECHE = Swinger.getResource("ptite_fleche.png");
 
     private Saver saver = new Saver(new File(Launcher.KUBITHON_DIR, "launcher.properties"));
 
     private boolean premium = false;
+    private boolean first = saver.get("first", "true").equalsIgnoreCase("true");
+    {
+        saver.set("first", "false");
+    }
 
     private LauncherFrame parentFrame;
 
@@ -104,7 +109,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         switchButton.setBounds(LauncherFrame.WIDTH - 35, LauncherFrame.HEIGHT - 35, 35, 35);
         this.add(switchButton);
 
-        setPremium(saver.get("premium", "true").equals("true"));
+        setPremium(saver.get("premium", "true").equals("true"), true);
 
         usernameField.addKeyListener(new KeyAdapter()
         {
@@ -119,8 +124,13 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         });
     }
 
-    protected void setPremium(boolean premium)
+    protected void setPremium(boolean premium, boolean init)
     {
+        if (!init)
+        {
+            first = false;
+        }
+
         Rectangle previous = infosLabel.getBounds();
 
         if (this.premium = premium)
@@ -164,6 +174,11 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         int height = 158; // 1267 / 8
 
         g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 55, width, height, this);
+
+        if (first)
+        {
+            g.drawImage(FLECHE, this.getWidth() - FLECHE.getWidth() - 12, this.getHeight() - FLECHE.getHeight() - 35, FLECHE.getWidth(), FLECHE.getHeight(), this);
+        }
     }
 
     @Override
@@ -179,7 +194,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         }
         else if (e.getSource() == switchButton)
         {
-            this.setPremium(!this.premium);
+            this.setPremium(!this.premium, false);
         }
         else if (e.getSource() == launchButton)
         {

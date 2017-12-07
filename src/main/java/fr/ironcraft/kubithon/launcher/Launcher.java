@@ -3,9 +3,8 @@ package fr.ironcraft.kubithon.launcher;
 import fr.ironcraft.kubithon.launcher.update.Downloader;
 import fr.ironcraft.kubithon.launcher.update.NativesManager;
 import fr.theshark34.openlauncherlib.LaunchException;
+import fr.theshark34.openlauncherlib.external.ExternalLaunchProfile;
 import fr.theshark34.openlauncherlib.external.ExternalLauncher;
-import fr.theshark34.openlauncherlib.internal.InternalLaunchProfile;
-import fr.theshark34.openlauncherlib.internal.InternalLauncher;
 import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
 import fr.theshark34.openlauncherlib.minecraft.GameFolder;
 import fr.theshark34.openlauncherlib.minecraft.GameInfos;
@@ -14,6 +13,7 @@ import fr.theshark34.openlauncherlib.minecraft.GameType;
 import fr.theshark34.openlauncherlib.minecraft.GameVersion;
 import fr.theshark34.openlauncherlib.minecraft.MinecraftLauncher;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
+import fr.theshark34.openlauncherlib.util.ProcessLogManager;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.UUID;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.IOUtils;
@@ -88,9 +87,8 @@ public class Launcher
 
         try
         {
-            InternalLaunchProfile profile = MinecraftLauncher.createInternalProfile(infos, folder, auth);
-            System.out.println(Arrays.toString((String[]) profile.getParameters()[0]));
-            InternalLauncher launcher = new InternalLauncher(profile);
+            ExternalLaunchProfile profile = MinecraftLauncher.createExternalProfile(infos, folder, auth);
+            ExternalLauncher launcher = new ExternalLauncher(profile);
 
             new Thread()
             {
@@ -109,7 +107,18 @@ public class Launcher
                 }
             }.start();
 
-            launcher.launch();
+            Process p = launcher.launch();
+            ProcessLogManager manager = new ProcessLogManager(p.getInputStream());
+            manager.start();
+
+            try
+            {
+                p.waitFor();
+            }
+            catch (InterruptedException ignored)
+            {
+            }
+
             System.exit(0);
         }
         catch (LaunchException e)
