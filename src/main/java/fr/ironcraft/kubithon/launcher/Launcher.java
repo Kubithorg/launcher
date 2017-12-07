@@ -1,7 +1,13 @@
 package fr.ironcraft.kubithon.launcher;
 
+import fr.ironcraft.kubithon.launcher.update.DownloadableFile;
 import fr.ironcraft.kubithon.launcher.update.Downloader;
 import fr.ironcraft.kubithon.launcher.update.NativesManager;
+import fr.litarvan.openauth.AuthPoints;
+import fr.litarvan.openauth.AuthenticationException;
+import fr.litarvan.openauth.Authenticator;
+import fr.litarvan.openauth.model.AuthAgent;
+import fr.litarvan.openauth.model.response.AuthResponse;
 import fr.theshark34.openlauncherlib.LaunchException;
 import fr.theshark34.openlauncherlib.external.ExternalLaunchProfile;
 import fr.theshark34.openlauncherlib.external.ExternalLauncher;
@@ -24,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.UUID;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -41,10 +46,23 @@ public class Launcher
         this.panel = panel;
     }
 
-    public void nonPremium(String username,final LauncherFrame frame)
+    public void nonPremium(String username, String password, final LauncherFrame frame)
     {
         panel.setStatus("Authentification...", LauncherPanel.BLUE);
-        // TODO
+        Authenticator authenticator = new Authenticator("https://kubithon.org/authserver/", AuthPoints.NORMAL_AUTH_POINTS);
+        AuthInfos auth;
+
+        try
+        {
+            AuthResponse response = authenticator.authenticate(AuthAgent.MINECRAFT, username, password, "kubithon");
+            auth = new AuthInfos(response.getSelectedProfile().getName(), response.getAccessToken(), response.getSelectedProfile().getId());
+        }
+        catch (AuthenticationException e)
+        {
+            error("Impossible de se connecter : " + e.getErrorModel().getError() + ", " + e.getErrorModel().getErrorMessage(), false, e);
+            return;
+        }
+        //auth = new AuthInfos("Litarvan", "azeiruanzer", "ajzoeirjazer");
 
         panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
@@ -60,8 +78,26 @@ public class Launcher
         }
         catch (IOException e)
         {
-            error("Impossible d'établir la liste des fichiers", e);
+            error("Impossible d'établir la liste des fichiers", true, e);
             return;
+        }
+
+        String authLib = "";
+
+        for (int i = 0; i < downloader.getToDownload().size(); i++)
+        {
+            DownloadableFile file = downloader.getToDownload().get(i);
+            String path = file.getFile().getAbsolutePath();
+
+            if (path.endsWith("authlib-1.5.25.jar"))
+            {
+                downloader.getToDownload().remove(i);
+            }
+
+            if (path.endsWith("authlib-kubithon.jar"))
+            {
+                authLib = path;
+            }
         }
 
         panel.setStatus("Téléchargement", LauncherPanel.BLUE);
@@ -76,18 +112,19 @@ public class Launcher
         }
         catch (IOException e)
         {
-            error("Impossible d'extraire les natives !\nVérifiez qu'il vous reste de l'espace disque, veuillez réessayer", e);
+            error("Impossible d'extraire les natives !", true, e);
         }
 
         panel.setStatus("Lancement...", LauncherPanel.BLUE);
 
         GameInfos infos = new GameInfos("kubithon", new GameVersion("1.12.2", GameType.V1_8_HIGHER), new GameTweak[]{GameTweak.FORGE});
         GameFolder folder = new GameFolder("assets", "libraries", "natives", "versions/1.12.2/1.12.2.jar");
-        AuthInfos auth = new AuthInfos(username, "unauthorized", UUID.randomUUID().toString());
 
         try
         {
             ExternalLaunchProfile profile = MinecraftLauncher.createExternalProfile(infos, folder, auth);
+            profile.setClassPath(profile.getClassPath() + File.pathSeparator + authLib);
+
             ExternalLauncher launcher = new ExternalLauncher(profile);
 
             new Thread()
@@ -123,7 +160,7 @@ public class Launcher
         }
         catch (LaunchException e)
         {
-            error("Impossible de lancer le jeu !\nVeuillez réessayer", e);
+            error("Impossible de lancer le jeu !\nVeuillez réessayer", true, e);
         }
     }
 
@@ -145,7 +182,7 @@ public class Launcher
         }
         catch (IOException e)
         {
-            error("Impossible de télécharger le fichier de version", e);
+            error("Impossible de télécharger le fichier de version", true, e);
             return;
         }
 
@@ -157,7 +194,7 @@ public class Launcher
         }
         catch (IOException e)
         {
-            error("Impossible d'établir la liste des fichiers", e);
+            error("Impossible d'établir la liste des fichiers", true, e);
             return;
         }
 
@@ -194,15 +231,15 @@ public class Launcher
         }
         catch (IOException e)
         {
-            error("Impossible de modifier les profils du launcher !\nVous devez avoir installé Minecraft 1.10.2 avant de lancer l'installeur !", e);
+            error("Impossible de modifier les profils du launcher !\nVous devez avoir installé Minecraft 1.10.2 avant de lancer l'installeur !", false, e);
         }
     }
 
-    private void error(String error, Exception e)
+    private void error(String error, boolean misc, Exception e)
     {
         panel.setStatus("Erreur", LauncherPanel.RED);
         e.printStackTrace();
 
-        JOptionPane.showMessageDialog(panel, "Erreur : " + error + "\nVérifiez que vous êtes bien connecté à Internet et qu'il vous reste de l'espace disque !\n(Détail : " + e + ")", "Erreur", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(panel, "Erreur : " + error + (misc ? "\nVérifiez que vous êtes bien connecté à Internet et qu'il vous reste de l'espace disque !\n(Détail : " + e + ")": ""), "Erreur", JOptionPane.ERROR_MESSAGE);
     }
 }

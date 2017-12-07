@@ -27,7 +27,7 @@ public class Downloader
     public static final String INDEX_REMOTE = "https://litarvan.github.io/Kubithon";
     public static final String RESOURCES_REMOTE = "https://resources.download.minecraft.net/";
     public static final String LIBRARIES_REMOTE = "https://libraries.minecraft.net/";
-    public static final String KUBITHON_REMOTE = "http://i.kubithon.org/";
+    public static final String KUBITHON_REMOTE = "https://i.kubithon.org/";
 
     public static final String KUBITHON_INDEX = INDEX_REMOTE + "/Kubithon.json";
     public static final String GAME_INDEX = INDEX_REMOTE + "/1.12.json";
@@ -74,7 +74,7 @@ public class Downloader
 
     public void addLibs(File out) throws IOException
     {
-        System.out.print("Listing assets -> Getting indexes... ");
+        System.out.print("Listing libraries -> Getting indexes... ");
         JSONObject kubithonIndex = json(download(KUBITHON_INDEX, file( "versions/Kubithon/Kubithon.json")));
         JSONObject gameIndex = json(download(GAME_INDEX, file("versions/Kubithon/1.12.2.json")));
 
@@ -183,8 +183,8 @@ public class Downloader
 
         for (String mod : mods)
         {
-            String[] split = mod.split(" {2}");
-            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[1]), file(split[1]), 0, split[0]));
+            String[] split = mod.split(" ");
+            toDownload.add(new DownloadableFile(new URL(KUBITHON_REMOTE + split[2]), file(split[2]), Integer.parseInt(split[3]), split[0]));
         }
 
         System.out.println("OK");

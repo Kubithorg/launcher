@@ -28,6 +28,7 @@ Output is `build/libs/kubithon-installer-<version>.jar`
 
  * Apache Commons IO (commons-io:commons-io) 2.5
  * Apache Commons Codec (commons-codec:commons-codec) 1.10
- * OpenLauncherLib (fr.litarvan.openlauncherlib) 3.0.3-BETA
+ * OpenLauncherLib (fr.litarvan.openlauncherlib) 3.0.4
  * Swinger (fr.theshark34.swinger) 1.0.1-BETA
+ * OpenAuth (fr.theshark34.openauth) 1.0.4
  * Json (org.json) 20160810

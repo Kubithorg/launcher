@@ -16,6 +16,7 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import jiconfont.icons.FontAwesome;
@@ -53,6 +54,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
 
     // Crack
     private JTextField usernameField;
+    private JPasswordField passwordField;
     private SColoredBar progressBar;
 
     // Premium
@@ -76,7 +78,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         this.add(quitButton);
 
         usernameField = new JTextField(saver.get("username", ""));
-        usernameField.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.WHITE));
+        usernameField.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.WHITE));
         usernameField.setHorizontalAlignment(SwingConstants.CENTER);
         usernameField.setBackground(Swinger.TRANSPARENT);
         usernameField.setOpaque(false);
@@ -84,8 +86,19 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         usernameField.setCaretColor(usernameField.getForeground());
         usernameField.setCaretPosition(usernameField.getText().length());
         usernameField.setFont(usernameField.getFont().deriveFont(16f));
-        usernameField.setBounds(125, 240, 200, 30);
+        usernameField.setBounds(125, 225, 200, 30);
         this.add(usernameField);
+
+        passwordField = new JPasswordField();
+        passwordField.setBorder(usernameField.getBorder());
+        passwordField.setHorizontalAlignment(SwingConstants.CENTER);
+        passwordField.setBackground(Swinger.TRANSPARENT);
+        passwordField.setOpaque(false);
+        passwordField.setForeground(Color.WHITE);
+        passwordField.setCaretColor(passwordField.getForeground());
+        passwordField.setFont(passwordField.getFont());
+        passwordField.setBounds(125, 267, 200, 30);
+        this.add(passwordField);
 
         progressBar = new SColoredBar(Swinger.getTransparentWhite(75), Swinger.getTransparentWhite(175));
         progressBar.setVisible(false);
@@ -111,7 +124,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
 
         setPremium(saver.get("premium", "true").equals("true"), true);
 
-        usernameField.addKeyListener(new KeyAdapter()
+        passwordField.addKeyListener(new KeyAdapter()
         {
             @Override
             public void keyPressed(KeyEvent keyEvent)
@@ -139,11 +152,20 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         }
         else
         {
-            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 140, previous.width, previous.height);
+            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 132, previous.width, previous.height);
         }
 
         usernameField.setVisible(!premium);
-        usernameField.requestFocus();
+        passwordField.setVisible(!premium);
+
+        if (usernameField.getText().trim().isEmpty())
+        {
+            usernameField.requestFocus();
+        }
+        else
+        {
+            passwordField.requestFocus();
+        }
 
         launchButton.setText(premium ? "Installer" : "Lancer");
         switchButton.setToolTipText("Passer " + (premium ? "Non-Premium" : "Premium"));
@@ -173,7 +195,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         int width = 137; // 1097 / 8
         int height = 158; // 1267 / 8
 
-        g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 55, width, height, this);
+        g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 50, width, height, this);
 
         if (first)
         {
@@ -222,7 +244,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
                 }
                 else
                 {
-                    launcher.nonPremium(usernameField.getText(), parentFrame);
+                    launcher.nonPremium(usernameField.getText(), new String(passwordField.getPassword()), parentFrame);
                     progressBar.setVisible(false);
                 }
 
@@ -235,6 +257,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
     protected void disable(boolean disable)
     {
         usernameField.setEnabled(!disable);
+        passwordField.setEnabled(!disable);
         launchButton.setEnabled(!disable);
         switchButton.setEnabled(!disable);
     }
