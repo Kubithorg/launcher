@@ -260,6 +260,11 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         passwordField.setEnabled(!disable);
         launchButton.setEnabled(!disable);
         switchButton.setEnabled(!disable);
+
+        if (!disable && !premium)
+        {
+            passwordField.requestFocus();
+        }
     }
 
     public SColoredBar getProgressBar()
