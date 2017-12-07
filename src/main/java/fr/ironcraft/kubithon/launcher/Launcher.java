@@ -228,6 +228,7 @@ public class Launcher
             }
 
             panel.setStatus("Terminé", "#22ee22");
+            JOptionPane.showMessageDialog(panel, "Terminé : Fermez l'installeur, vous pouvez maintenant lancer le launcher officiel et jouer au jeu avec le profil 'Kubithon' !", "Terminé", JOptionPane.INFORMATION_MESSAGE);
         }
         catch (IOException e)
         {

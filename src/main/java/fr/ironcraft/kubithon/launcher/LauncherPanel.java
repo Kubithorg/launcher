@@ -6,13 +6,19 @@ import fr.theshark34.swinger.colored.SColoredBar;
 import fr.theshark34.swinger.event.SwingerEvent;
 import fr.theshark34.swinger.event.SwingerEventListener;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -51,11 +57,12 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
     // General
     private KubithonButton launchButton;
     private KubithonButton switchButton;
+    private SColoredBar progressBar;
 
     // Crack
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private SColoredBar progressBar;
+    private AntialiasingLabel registerLabel;
 
     // Premium
     private AntialiasingLabel infosLabel;
@@ -86,7 +93,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         usernameField.setCaretColor(usernameField.getForeground());
         usernameField.setCaretPosition(usernameField.getText().length());
         usernameField.setFont(usernameField.getFont().deriveFont(16f));
-        usernameField.setBounds(125, 225, 200, 30);
+        usernameField.setBounds(125, 220, 200, 30);
         this.add(usernameField);
 
         passwordField = new JPasswordField();
@@ -97,8 +104,46 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         passwordField.setForeground(Color.WHITE);
         passwordField.setCaretColor(passwordField.getForeground());
         passwordField.setFont(passwordField.getFont());
-        passwordField.setBounds(125, 267, 200, 30);
+        passwordField.setBounds(125, 257, 200, 30);
         this.add(passwordField);
+
+        registerLabel = new AntialiasingLabel();
+        registerLabel.setText("<html><u>S'inscrire</u></html>");
+        registerLabel.setForeground(Color.WHITE);
+        registerLabel.setFont(registerLabel.getFont().deriveFont(12f));
+        registerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        registerLabel.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent)
+            {
+                if(Desktop.isDesktopSupported())
+                {
+                    try
+                    {
+                        Desktop.getDesktop().browse(new URI("https://kubithon.org/register"));
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                {
+                    Runtime runtime = Runtime.getRuntime();
+                    try
+                    {
+                        runtime.exec("xdg-open https://kubithon.org/register");
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        registerLabel.setBounds(0, 295, LauncherFrame.WIDTH, 20);
+        this.add(registerLabel);
 
         progressBar = new SColoredBar(Swinger.getTransparentWhite(75), Swinger.getTransparentWhite(175));
         progressBar.setVisible(false);
@@ -152,11 +197,12 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         }
         else
         {
-            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 132, previous.width, previous.height);
+            infosLabel.setBounds(previous.x, LauncherFrame.HEIGHT - 130, previous.width, previous.height);
         }
 
         usernameField.setVisible(!premium);
         passwordField.setVisible(!premium);
+        registerLabel.setVisible(!premium);
 
         if (usernameField.getText().trim().isEmpty())
         {
@@ -195,7 +241,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         int width = 137; // 1097 / 8
         int height = 158; // 1267 / 8
 
-        g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 50, width, height, this);
+        g.drawImage(LOGO, this.getWidth() / 2 - width / 2, premium ? 75 : 47, width, height, this);
 
         if (first)
         {
