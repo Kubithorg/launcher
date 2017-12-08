@@ -69,7 +69,7 @@ public class Launcher
             JOptionPane.showMessageDialog(frame, "Alerte : Vous utilisez actuellement Java '9', Forge n'est pas compatible avec cette version. Veuillez supprimer cette version, et en installer une moins récente si ce n'est pas déjà le cas.\nLe jeu ne se lancera très probablement pas.", "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
-        panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
+        panel.setStatus("Lecture de l'index des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
 
         Downloader downloader = new Downloader(panel);
@@ -233,7 +233,7 @@ public class Launcher
             }
 
             panel.setStatus("Terminé", "#22ee22");
-            JOptionPane.showMessageDialog(panel, "Terminé : Fermez l'installeur, vous pouvez maintenant lancer le launcher officiel et jouer au jeu avec le profil 'Kubithon' !", "Terminé", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(panel, "Terminé : Fermez l'installeur, vous pouvez maintenant lancer le launcher officiel et jouer au jeu via le profil 'Kubithon' !", "Terminé", JOptionPane.INFORMATION_MESSAGE);
         }
         catch (IOException e)
         {
