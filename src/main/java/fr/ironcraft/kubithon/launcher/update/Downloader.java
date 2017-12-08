@@ -244,7 +244,7 @@ public class Downloader
     protected String makePath(String library)
     {
         String[] split = library.split(":");
-        String name = "";
+        StringBuilder name = new StringBuilder();
 
         for (int i = 0; i < split.length; i++)
         {
@@ -255,12 +255,12 @@ public class Downloader
                 current = current.replace('.', '/');
             }
 
-            name += current + "/";
+            name.append(current).append("/");
         }
 
-        name += split[split.length - 2] + "-" + split[split.length - 1] + ".jar";
+        name.append(split[split.length - 2]).append("-").append(split[split.length - 1]).append(".jar");
 
-        return name;
+        return name.toString();
     }
 
     protected boolean checkRules(JSONObject library)

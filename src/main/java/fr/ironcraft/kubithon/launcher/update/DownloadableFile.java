@@ -119,6 +119,7 @@ public class DownloadableFile
                 sha1digest.update(buffer, 0, len);
                 len = in.read(buffer);
             }
+            in.close();
 
             Formatter formatter = new Formatter();
 

@@ -20,14 +20,8 @@ import fr.theshark34.openlauncherlib.minecraft.GameVersion;
 import fr.theshark34.openlauncherlib.minecraft.MinecraftLauncher;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import fr.theshark34.openlauncherlib.util.ProcessLogManager;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import javax.swing.JOptionPane;
@@ -226,7 +220,7 @@ public class Launcher
 
                 object.put("selectedProfile", "Kubithon");
 
-                BufferedWriter writer = new BufferedWriter(new FileWriter(launcherProfiles));
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(launcherProfiles), Charset.forName("UTF-8")));
                 object.write(writer, 2, 0);
 
                 IOUtils.closeQuietly(writer);
