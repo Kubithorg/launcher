@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.util.Formatter;
+
 import org.json.JSONObject;
 
 public class DownloadableFile
@@ -119,7 +120,21 @@ public class DownloadableFile
                 len = in.read(buffer);
             }
 
-            return new HexBinaryAdapter().marshal(sha1digest.digest()).equalsIgnoreCase(sha1);
+            Formatter formatter = new Formatter();
+
+            try
+            {
+                for (final byte b : sha1digest.digest())
+                {
+                    formatter.format("%02x", b);
+                }
+
+                return formatter.toString().equalsIgnoreCase(sha1);
+            }
+            finally
+            {
+                formatter.close();
+            }
         }
 
         return true;

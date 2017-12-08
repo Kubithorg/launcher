@@ -60,8 +60,8 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
     private SColoredBar progressBar;
 
     // Crack
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    private KubithonTextField usernameField;
+    private KubithonPasswordField passwordField;
     private AntialiasingLabel registerLabel;
 
     // Premium
@@ -84,7 +84,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         quitButton.setBounds(LauncherFrame.WIDTH - 30, 0, 30, 30);
         this.add(quitButton);
 
-        usernameField = new JTextField(saver.get("username", ""));
+        usernameField = new KubithonTextField(saver.get("username", ""), "Nom d'utilisateur");
         usernameField.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.WHITE));
         usernameField.setHorizontalAlignment(SwingConstants.CENTER);
         usernameField.setBackground(Swinger.TRANSPARENT);
@@ -96,7 +96,7 @@ public class LauncherPanel extends JPanel implements SwingerEventListener
         usernameField.setBounds(125, 220, 200, 30);
         this.add(usernameField);
 
-        passwordField = new JPasswordField();
+        passwordField = new KubithonPasswordField("Mot de passe");
         passwordField.setBorder(usernameField.getBorder());
         passwordField.setHorizontalAlignment(SwingConstants.CENTER);
         passwordField.setBackground(Swinger.TRANSPARENT);

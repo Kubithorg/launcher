@@ -64,6 +64,11 @@ public class Launcher
         }
         //auth = new AuthInfos("Litarvan", "azeiruanzer", "ajzoeirjazer");
 
+        if (System.getProperty("java.home").contains("9"))
+        {
+            JOptionPane.showMessageDialog(frame, "Alerte : Vous utilisez actuellement Java '9', Forge n'est pas compatible avec cette version. Veuillez supprimer cette version, et en installer une moins récente si ce n'est pas déjà le cas.\nLe jeu ne se lancera très probablement pas.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+
         panel.setStatus("Listage des fichiers", LauncherPanel.BLUE);
         panel.getProgressBar().setVisible(true);
 
